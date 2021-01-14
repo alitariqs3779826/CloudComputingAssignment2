@@ -1,32 +1,141 @@
+# from pycognito import Cognito
+
+# u = Cognito('us-west-2_PsC9h5W0N', '281hf825n7bh0t0s55giarg103')
+
+# u.set_base_attributes(email='you@you.com', password='random value')
+
+# u.register('username', 'password')
+import os
+from flask import Flask, render_template, redirect, url_for, request
 import boto3
-import json
+from botocore.exceptions import ClientError
 
-with open('happy.jpg', 'rb') as image_data:
-    response_content = image_data.read()
-
-def detect_faces(photo):
-
-    client=boto3.client('rekognition',aws_access_key_id='ASIAXCDX35MMYLRMLFJC',
-             aws_secret_access_key='wZg/J0K1J3zDfVYaNfF7g989xKqBBT313SpBasua',
-             aws_session_token='FwoGZXIvYXdzEB4aDG09R52nL11YckLRkSLMAX8mJPY4gyZNkZpFcRpm/XSWZgfpfyeLUVKJLQxf2AE3APIAEhzjdFa8bLiIMSkBWKAj6kFcXAQ6mOJQovD/CIsG6BXYEDr0e4XJvhWlRxsDKb928VF5gpCXly5BT6JxaVveKC377jCnZTYUA+TYJ2BVO+niUDi3aVFLpWBEhYUulFmWdiNviA6Rr4A/0zRQdW1JYlKlNTBSE6mmMgvxtKB4qdVs1r+4l573vrXF8t871XB4I02yhvUrxAkorjhX+zaB8nf1PLluYKA9VCjjxfv/BTIttsxPs8837c8EuEuJBQK89AJSqlzKGK34KVurU2rEHRrVQ3f3AZYO+YnZ/GDJ',
-             region_name='us-east-1')
-
-    response = client.detect_faces(Image={'Bytes':response_content}, Attributes=['ALL'])
-
-    print('Detected faces for ' + photo)    
-    for faceDetail in response['FaceDetails']:
-        print('The detected face is between ' + str(faceDetail['AgeRange']['Low']) 
-              + ' and ' + str(faceDetail['AgeRange']['High']) + ' years old')
-        print('Here are the other attributes:')
-        print(json.dumps(faceDetail, indent=4, sort_keys=True))
-
-    return len(response['FaceDetails'])
-
-def main():
-    photo='happy.jpg'
-    face_count=detect_faces(photo)
-    print("Faces detected: " + str(face_count))
+app = Flask(__name__)
+APP_CLIENT_ID = "281hf825n7bh0t0s55giarg103"
 
 
-if __name__ == "__main__":
-    main()
+@app.route('/')
+def lobby():
+    return render_template('index.html')
+
+
+@app.route('/auth/signup/', methods=['POST'])
+def signup():
+    user_email = request.form['Email']
+    user_password = request.form['Password']
+    user_name = request.form['Username']
+
+    idp_client = boto3.client('cognito-idp')
+    try:
+        idp_client.sign_up(ClientId=APP_CLIENT_ID,
+                           Username=user_email,
+                           Password=user_password,
+                           UserAttributes=[{'Name': 'name', 'Value': user_name}])
+    except ClientError as e:
+        if e.response['Error']['Code'] == 'UsernameExistsException':
+            # Todo Handle Already Exists Email
+            print("User already exists")
+        if e.response['Error']['Code'] == 'ParamValidationError':
+            # Todo Handle Param Validate
+            print("Param Validate Error")
+        print(e)
+    return redirect(url_for('lobby'))
+
+
+@app.route('/auth/resend/confirm/', methods=['POST'])
+def resend_confirm():
+    user_email = request.form['Email']
+
+    idp_client = boto3.client('cognito-idp')
+    try:
+        idp_client.resend_confirmation_code(ClientId=APP_CLIENT_ID,
+                                            Username=user_email)
+    except ClientError as e:
+        if e.response['Error']['Code'] == 'UserNotFoundException':
+            # Todo Handle Not Found User
+            print("Can't Find user by Email")
+        if e.response['Error']['Code'] == 'ParamValidationError':
+            # Todo Handle Param Validate
+            print("Param Validate Error")
+        print(e)
+    return redirect(url_for('lobby'))
+
+
+@app.route('/auth/confirm/signup/', methods=['POST'])
+def confirm_sign_up():
+    user_email = request.form['Email']
+    confirm_code = request.form['ConfirmCode']
+
+    idp_client = boto3.client('cognito-idp')
+    try:
+        idp_client.confirm_sign_up(ClientId=APP_CLIENT_ID,
+                                   Username=user_email,
+                                   ConfirmationCode=confirm_code)
+    except ClientError as e:
+        if e.response['Error']['Code'] == 'UserNotFoundException':
+            # Todo Handle Not Found User
+            print("Can't Find user by Email")
+        if e.response['Error']['Code'] == 'CodeMismatchException':
+            # Todo Handle Code Mismatch
+            print("User Code Mismatch")
+        if e.response['Error']['Code'] == 'ParamValidationError':
+            # Todo Handle Param Validate
+            print("Param Validate Error")
+        if e.response['Error']['Code'] == 'ExpiredCodeException':
+            # Todo Handle Expired Code
+            print("Expired Code")
+        print(e)
+    return redirect(url_for('lobby'))
+
+
+@app.route('/auth/forgot/password/', methods=['POST'])
+def forgot_password():
+    user_email = request.form['Email']
+
+    idp_client = boto3.client('cognito-idp')
+    try:
+        idp_client.forgot_password(ClientId=APP_CLIENT_ID,
+                                   Username=user_email)
+    except ClientError as e:
+        if e.response['Error']['Code'] == 'UserNotFoundException':
+            # Todo Handle Not Found User
+            print("Can't Find user by Email")
+        if e.response['Error']['Code'] == 'ParamValidationError':
+            # Todo Handle Param Validate
+            print("Param Validate Error")
+        print(e)
+    return redirect(url_for('lobby'))
+
+
+@app.route('/auth/confirm/forgot/password/', methods=['POST'])
+def confirm_forgot_password():
+    user_email = request.form['Email']
+    confirm_code = request.form['ConfirmCode']
+    random_password = '!1a+random'
+
+    idp_client = boto3.client('cognito-idp')
+    try:
+        idp_client.confirm_forgot_password(ClientId=APP_CLIENT_ID,
+                                           Username=user_email,
+                                           ConfirmationCode=confirm_code,
+                                           Password=random_password)
+
+    except ClientError as e:
+        if e.response['Error']['Code'] == 'UserNotFoundException':
+            # Todo Handle Not Found User
+            print("Can't Find user by Email")
+        if e.response['Error']['Code'] == 'CodeMismatchException':
+            # Todo Handle Code Mismatch
+            print("User Code Mismatch")
+        if e.response['Error']['Code'] == 'ParamValidationError':
+            # Todo Handle Param Validate
+            print("Param Validate Error")
+        if e.response['Error']['Code'] == 'ExpiredCodeException':
+            # Todo Handle Expired Code
+            print("Expired Code")
+
+    return redirect(url_for('lobby'))
+
+
+if __name__ == '__main__':
+    app.run()
