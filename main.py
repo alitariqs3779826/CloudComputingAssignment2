@@ -1,6 +1,6 @@
 
 import os
-from flask import Flask, render_template, redirect, url_for, request, jsonify
+from flask import Flask, render_template, redirect, url_for, request, jsonify, session
 import boto3
 from botocore.exceptions import ClientError
 import requests
@@ -10,8 +10,8 @@ import os
 
 app = Flask(__name__)
 APP_CLIENT_ID = "281hf825n7bh0t0s55giarg103"
-app.config["IMAGE_UPLOADS"] = "/Users/apple/Desktop/CloudComputingAssignment2/static/img"
-
+app.config["IMAGE_UPLOADS"] = "static/img"
+app.secret_key = '281hf825n7bh0t0s55giarg103'
 
 logged_username = ''
 logged_password = ''
@@ -104,10 +104,10 @@ def forgot_password():
                                    Username=user_email)
     except ClientError as e:
         if e.response['Error']['Code'] == 'UserNotFoundException':
-            # Todo Handle Not Found User
+         
             print("Can't Find user by Email")
         if e.response['Error']['Code'] == 'ParamValidationError':
-            # Todo Handle Param Validate
+            
             print("Param Validate Error")
         print(e)
     return redirect(url_for('lobby'))
@@ -127,6 +127,8 @@ def login():
                                     'PASSWORD': password
                                     }
         )
+        session['idToken'] = response['AuthenticationResult']['IdToken']
+
       
         
     except ClientError as e:
@@ -148,7 +150,7 @@ def login():
 
     r = requests.get("https://8c7ymla190.execute-api.us-west-2.amazonaws.com/dev/test_auth", 
     headers={"Authorization": response['AuthenticationResult']['IdToken']})
-
+    print(response['AuthenticationResult']['IdToken'])
    
     return redirect(url_for('home'))
 
@@ -159,35 +161,12 @@ def home():
 @app.route('/profile')
 def profile():
    
+    r = requests.get("https://xomyksdc28.execute-api.us-west-2.amazonaws.com/dev/profile", 
+    headers={"Authorization": session['idToken']})
+    print(r.json()['name'])
     
-  
-    client = boto3.client('dynamodb',region_name="us-west-2")
-    global dbName
-    global dbMail
-    global dbContact
-    global dbPassword
-    global userExists
-
-    try:
-        response = client.get_item(TableName='Users',Key={'email': {'S': "mail2@mail2.com"}})
-        
-    except ClientError as e:
-        if e.response['Error']['Code'] == 'ResourceNotFoundException':
-        
-            print("here")
-    if response['ResponseMetadata']['HTTPHeaders']['content-length'] == str(2):
-        dbName = ' '
-        dbPassword = ' '
-        dbMail = ' '
-        dbContact = ' '
-        userExists = False
-    else:
-        dbName = response['Item']['name']['S']
-        dbPassword = response['Item']['password']['S']
-        dbMail = response['Item']['email']['S']
-        dbContact = response['Item']['contact']['S']
  
-    return render_template('profile.html', name = dbName, password = dbPassword, email = dbMail, contact = dbContact)
+    return render_template('profile.html')
 
 @app.route('/get-items')
 def get_items():
@@ -208,7 +187,7 @@ def confirm_forgot_password():
 
     except ClientError as e:
         if e.response['Error']['Code'] == 'UserNotFoundException':
-            # Todo Handle Not Found User
+          
             print("Can't Find user by Email")
         if e.response['Error']['Code'] == 'CodeMismatchException':
             # Todo Handle Code Mismatch
@@ -231,50 +210,9 @@ def editProfile():
         email = request.form['email']
         contact = request.form['contact']
         password = request.form['password']
-        if userExists == False:
-            try:
-                response = client.put_item(TableName='Users',Item={ 'email': {'S': str(email)},
-                'name': {'S':str(name)}, 'password': {'S':str(password)},'contact': {'S':str(contact)} 
-                },ReturnConsumedCapacity='TOTAL')
-                print(response)
-            
-            except ClientError as e:
-                if e.response['Error']['Code'] == 'ResourceNotFoundException':
-                    print("Error")
-        elif userExists == True:
-            print("h")
-            response = client.update_item(
-            ExpressionAttributeNames={
-                
-                '#N': 'name',
-                '#C': 'contact',
-                '#P': 'password'
-            },
-            ExpressionAttributeValues={
-                
-                ':n': {
-                    'S': str(name),
-                },
-                ':c': {
-                    'S': str(contact),
-                },
-                ':p': {
-                    'S': str(password),
-                }
-            },
-            Key={
-                'email': {
-                    'S': 'mail2@mail2.com',
-                }
-              
-            },
-            ReturnValues='ALL_NEW',
-            TableName='Users',
-            UpdateExpression='SET  #N = :n,#C = :c, #P = :p',
-            )
-            print(response)
-        
-
+        r = requests.post('https://xomyksdc28.execute-api.us-west-2.amazonaws.com/dev/profile',
+        headers={"Authorization": session['idToken']},json= {"name":name,"contact":contact})
+        print(r.status_code)
 
 
     return render_template('edit_profile.html', name = dbName, password = dbPassword, email = dbMail, contact = dbContact)
@@ -298,14 +236,14 @@ def createBucket():
         
     return None
 
-def uploadImage():
-    client = boto3.client('s3', region_name='us-west-2')
-    try:
-        response = client.upload_file('/Users/apple/Desktop/CloudComputingAssignment2/eso1907a.jpg', 'profilebucket', 'image_0.jpg')
-        print(response)
-    except ClientError as e:
-        print(e)
-        print("no")
+# def uploadImage():
+#     client = boto3.client('s3', region_name='us-west-2')
+#     try:
+#         response = client.upload_file('/Users/apple/Desktop/CloudComputingAssignment2/eso1907a.jpg', 'profilebucket', 'image_0.jpg')
+#         print(response)
+#     except ClientError as e:
+#         print(e)
+#         print("no")
 
 @app.route("/upload-image", methods=["GET", "POST"])
 def upload_image():

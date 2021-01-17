@@ -2,7 +2,15 @@
 <html>
 <body>
 Edit Profile
-<form action="#" method="post">
+<form action="#" method="post" enctype="multipart/form-data">
+    <div class="form-group">
+        <label>Select image</label>
+        <div class="custom-file">
+          <input type="file" class="custom-file-input" name="image" id="image">
+          <label class="custom-file-label" for="image">Select image...</label>
+        </div>
+    </div>
+
     Name: <input type="text" name="name" value = {{name}}></input><br>
     Email: <input type="text" name="email" value = {{email}}></input><br>
     Contact: <input type="text" name="contact" value = {{contact}}></input><br>
