@@ -160,7 +160,7 @@ def home():
 
 @app.route('/profile')
 def profile():
-    os.remove(os.path.join(app.config["IMAGE_UPLOADS"], str(session['username'])+".png"))
+    # os.remove(os.path.join(app.config["IMAGE_UPLOADS"], str(session['username'])+".png"))
     r = requests.get("https://xomyksdc28.execute-api.us-west-2.amazonaws.com/dev/profile", 
     headers={"Authorization": session['idToken']})
 
@@ -170,9 +170,20 @@ def profile():
     dbName = r.json()['name']
     dbContact = r.json()['contact']
     download_image(r.json()['email'])
-    path = app.config["IMAGE_UPLOADS"]+"/"+r.json()['email']+".png"
+    # image_object = s3 lookup based on file-name
+    # get url of image
+    # if image not uploaded - get default image path (can be local)
+    # path = app.config["IMAGE_UPLOADS"]+"/"+r.json()['email']+".png"
+    s3_client = boto3.client('s3', region_name='us-west-2')
+    url = s3_client.generate_presigned_url('get_object',
+                                Params={
+                                    'Bucket': 'profilebucket',
+                                    'Key': r.json()['email']+".png",
+                                },                                  
+                                ExpiresIn=3600)
+    print(url)
     
-    return render_template('profile.html',name = r.json()['name'],contact = r.json()['contact'],email = r.json()['email'], password = r.json()['password'],user_image = path)
+    return render_template('profile.html',name = r.json()['name'],contact = r.json()['contact'],email = r.json()['email'], password = r.json()['password'],user_image = url)
 
 @app.route('/get-items')
 def get_items():
@@ -217,15 +228,18 @@ def editProfile():
         
             s3_client = boto3.client('s3', region_name='us-west-2')
             image = request.files["image"]
+            print(session['username'])
             image.save(os.path.join(app.config["IMAGE_UPLOADS"], str(session['username'])+".png"))
    
             
             try:
+
                 
                 path = app.config["IMAGE_UPLOADS"]+"/"+str(session['username'])+".png"
                 print(image)
                 if image.filename != '':
                     image_exists(str(session['username']))
+                    s3_client.upload_file(str(path), 'profilebucket', str(session['username'])+".png")
                 # else:
                 #     response = s3_client.upload_file(str(path), 'profilebucket', str(session['username'])+".png")
             except ClientError as e:
