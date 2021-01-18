@@ -7,19 +7,21 @@ import requests
 import aws_controller
 from PIL import Image
 import os
+import botocore
+
 
 app = Flask(__name__)
 APP_CLIENT_ID = "281hf825n7bh0t0s55giarg103"
 app.config["IMAGE_UPLOADS"] = "static/img"
 app.secret_key = '281hf825n7bh0t0s55giarg103'
 
+
+dbName = ''
+dbContact = ''
+
 logged_username = ''
 logged_password = ''
-dbName = ' '
-dbPassword = ' '
-dbMail = ' '
-dbContact = ' '
-userExists = True
+
 @app.route('/')
 def lobby():
     return render_template('index.html')
@@ -39,10 +41,10 @@ def signup():
                            UserAttributes=[{'Name': 'name', 'Value': user_name}])
     except ClientError as e:
         if e.response['Error']['Code'] == 'UsernameExistsException':
-            # Todo Handle Already Exists Email
+           
             print("User already exists")
         if e.response['Error']['Code'] == 'ParamValidationError':
-            # Todo Handle Param Validate
+          
             print("Param Validate Error")
         print(e)
     return redirect(url_for('lobby'))
@@ -58,10 +60,10 @@ def resend_confirm():
                                             Username=user_email)
     except ClientError as e:
         if e.response['Error']['Code'] == 'UserNotFoundException':
-            # Todo Handle Not Found User
+         
             print("Can't Find user by Email")
         if e.response['Error']['Code'] == 'ParamValidationError':
-            # Todo Handle Param Validate
+         
             print("Param Validate Error")
         print(e)
     return redirect(url_for('lobby'))
@@ -129,24 +131,22 @@ def login():
         )
         session['idToken'] = response['AuthenticationResult']['IdToken']
 
-      
-        
+        # global logged_username
+        # logged_username  = user_email
+        session['username'] = user_email
     except ClientError as e:
         if e.response['Error']['Code'] == 'UserNotFoundException':
-            # Todo Handle Not Found User
+          
             print("Can't Find user by Email")
             return redirect(url_for('lobby'))
         if e.response['Error']['Code'] == 'ParamValidationError':
-            # Todo Handle Param Validate
+            
             print("Param Validate Error")
             return redirect(url_for('lobby'))
         print(e)
     
       
-    global logged_username
-    global logged_password
-    logged_username = user_email
-    logged_password = password
+  
 
     r = requests.get("https://8c7ymla190.execute-api.us-west-2.amazonaws.com/dev/test_auth", 
     headers={"Authorization": response['AuthenticationResult']['IdToken']})
@@ -160,13 +160,19 @@ def home():
 
 @app.route('/profile')
 def profile():
-   
+    os.remove(os.path.join(app.config["IMAGE_UPLOADS"], str(session['username'])+".png"))
     r = requests.get("https://xomyksdc28.execute-api.us-west-2.amazonaws.com/dev/profile", 
     headers={"Authorization": session['idToken']})
-    print(r.json()['name'])
+
+    global dbName 
+    global dbContact 
+
+    dbName = r.json()['name']
+    dbContact = r.json()['contact']
+    download_image(r.json()['email'])
+    path = app.config["IMAGE_UPLOADS"]+"/"+r.json()['email']+".png"
     
- 
-    return render_template('profile.html')
+    return render_template('profile.html',name = r.json()['name'],contact = r.json()['contact'],email = r.json()['email'], password = r.json()['password'],user_image = path)
 
 @app.route('/get-items')
 def get_items():
@@ -190,32 +196,50 @@ def confirm_forgot_password():
           
             print("Can't Find user by Email")
         if e.response['Error']['Code'] == 'CodeMismatchException':
-            # Todo Handle Code Mismatch
             print("User Code Mismatch")
         if e.response['Error']['Code'] == 'ParamValidationError':
-            # Todo Handle Param Validate
+           
             print("Param Validate Error")
         if e.response['Error']['Code'] == 'ExpiredCodeException':
-            # Todo Handle Expired Code
             print("Expired Code")
 
     return redirect(url_for('lobby'))
 
 @app.route('/edit_profile',methods=['GET','POST'])
 def editProfile():
-    client = boto3.client('dynamodb',region_name="us-west-2")
     if request.method  == 'POST':
         print("h")
         name = request.form['name']
         email = request.form['email']
         contact = request.form['contact']
         password = request.form['password']
+        if request.files:
+        
+            s3_client = boto3.client('s3', region_name='us-west-2')
+            image = request.files["image"]
+            image.save(os.path.join(app.config["IMAGE_UPLOADS"], str(session['username'])+".png"))
+   
+            
+            try:
+                
+                path = app.config["IMAGE_UPLOADS"]+"/"+str(session['username'])+".png"
+                print(image)
+                if image.filename != '':
+                    image_exists(str(session['username']))
+                # else:
+                #     response = s3_client.upload_file(str(path), 'profilebucket', str(session['username'])+".png")
+            except ClientError as e:
+                print(e)
+                print("no")
+                return None
+        os.remove(os.path.join(app.config["IMAGE_UPLOADS"], str(session['username'])+".png"))
         r = requests.post('https://xomyksdc28.execute-api.us-west-2.amazonaws.com/dev/profile',
         headers={"Authorization": session['idToken']},json= {"name":name,"contact":contact})
-        print(r.status_code)
+
+        # return redirect(url_for(profile))
 
 
-    return render_template('edit_profile.html', name = dbName, password = dbPassword, email = dbMail, contact = dbContact)
+    return render_template('edit_profile.html', name = dbName, password = "password", email = "email", contact = dbContact)
 
 def createBucket():
    
@@ -236,44 +260,32 @@ def createBucket():
         
     return None
 
-# def uploadImage():
-#     client = boto3.client('s3', region_name='us-west-2')
-#     try:
-#         response = client.upload_file('/Users/apple/Desktop/CloudComputingAssignment2/eso1907a.jpg', 'profilebucket', 'image_0.jpg')
-#         print(response)
-#     except ClientError as e:
-#         print(e)
-#         print("no")
+def download_image(name):
+    s3 = boto3.resource('s3')
+    path = app.config["IMAGE_UPLOADS"]+"/"+str(name)+".png"
+    s3.meta.client.download_file('profilebucket', name+".png", path)
 
-@app.route("/upload-image", methods=["GET", "POST"])
-def upload_image():
-    if request.method == "POST":
-        if request.files:
-           
-            client = boto3.client('s3', region_name='us-west-2')
-            image = request.files["image"]
-            image.save(os.path.join(app.config["IMAGE_UPLOADS"], image.filename))
-            saved = True
-            print(image)
+def image_exists(name):
+   
+    s3 = boto3.resource('s3')
+    s3_client = boto3.client('s3', region_name='us-west-2')
+    path = app.config["IMAGE_UPLOADS"]+"/"+str(session['username'])+".png"
+    try:
+        s3.Object('profilebucket', str(name)+".png").load()
+    except botocore.exceptions.ClientError as e:
+        if e.response['Error']['Code'] == "404":
+     
             
-            try:
-                path = app.config["IMAGE_UPLOADS"]+"/"+str(image.filename)
-                response = client.upload_file(str(path), 'profilebucket', image.filename)
-                print(response)
-            except ClientError as e:
-                print(e)
-                print("no")
-            if saved == True:
-                os.remove(os.path.join(app.config["IMAGE_UPLOADS"], image.filename))
-        # if request.files:
+            s3_client.upload_file(str(path), 'profilebucket', str(session['username'])+".png")
+            print("not")
+            return 
+        else:
+       
+            print("g")
 
-        #     image = request.files["image"]
-        #     image.save(os.path.join(app.config["IMAGE_UPLOADS"], image.filename))
-        #     os.remove(os.path.join(app.config["IMAGE_UPLOADS"], image.filename))
-           
-
-            return redirect(request.url)
-    return render_template("upload_image.html")
+    print("exsists")
+ 
+    
 
 if __name__ == '__main__':
    
