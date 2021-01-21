@@ -1,0 +1,49 @@
+service: serverless-booking
+
+org: telehealth
+
+provider:
+  name: aws
+  runtime: python3.7
+  region: us-west-2
+  timeout: 60
+  
+  
+resources:
+  Resources:
+    ApiGatewayAuthorizer:
+      DependsOn:
+        - ApiGatewayRestApi
+      Type: AWS::ApiGateway::Authorizer
+      Properties:
+        Name: cognito-authorizer
+        IdentitySource: method.request.header.Authorization
+        RestApiId:
+          Ref: ApiGatewayRestApi
+        Type: COGNITO_USER_POOLS
+        ProviderARNs: 
+          - arn:aws:cognito-idp:us-west-2:621170239250:userpool/us-west-2_PsC9h5W0N
+        
+
+
+functions:
+  profile:
+    handler: main.booking
+    events:
+      - http:
+          path: /booking
+          method: get
+          authorizer:
+            type: COGNITO_USER_POOLS
+            authorizerId:
+              Ref: ApiGatewayAuthorizer
+  update-profile:
+    handler: main.create_booking
+    events:
+      - http:
+          path: /booking
+          method: post
+          authorizer:
+            type: COGNITO_USER_POOLS
+            authorizerId:
+              Ref: ApiGatewayAuthorizer

@@ -1,32 +1,63 @@
-import boto3
+
 import json
+import boto3
+from botocore.exceptions import ClientError
 
-with open('happy.jpg', 'rb') as image_data:
-    response_content = image_data.read()
+def booking(event, context):
+    
 
-def detect_faces(photo):
+    return {
+        "statusCode": 200,
+        "body": json.dumps('profile')
+    }
+    
+def create_booking(event, context):
+    
+    email = event.get("requestContext").get("authorizer").get("claims").get("email")
+    dynamodb_client = boto3.client('dynamodb', region_name = "us-west-2")
+    request_body = json.loads(event.get("body"))
+    booking_id = request_body.get("booking_id","")
+    meeting_name = request_body.get("meeting_name","")
 
-    client=boto3.client('rekognition',aws_access_key_id='ASIAXCDX35MMYLRMLFJC',
-             aws_secret_access_key='wZg/J0K1J3zDfVYaNfF7g989xKqBBT313SpBasua',
-             aws_session_token='FwoGZXIvYXdzEB4aDG09R52nL11YckLRkSLMAX8mJPY4gyZNkZpFcRpm/XSWZgfpfyeLUVKJLQxf2AE3APIAEhzjdFa8bLiIMSkBWKAj6kFcXAQ6mOJQovD/CIsG6BXYEDr0e4XJvhWlRxsDKb928VF5gpCXly5BT6JxaVveKC377jCnZTYUA+TYJ2BVO+niUDi3aVFLpWBEhYUulFmWdiNviA6Rr4A/0zRQdW1JYlKlNTBSE6mmMgvxtKB4qdVs1r+4l573vrXF8t871XB4I02yhvUrxAkorjhX+zaB8nf1PLluYKA9VCjjxfv/BTIttsxPs8837c8EuEuJBQK89AJSqlzKGK34KVurU2rEHRrVQ3f3AZYO+YnZ/GDJ',
-             region_name='us-east-1')
+    dynamodb = boto3.resource('dynamodb',  region_name='us-west-2')
 
-    response = client.detect_faces(Image={'Bytes':response_content}, Attributes=['ALL'])
+    table = dynamodb.Table("Bookings")
 
-    print('Detected faces for ' + photo)    
-    for faceDetail in response['FaceDetails']:
-        print('The detected face is between ' + str(faceDetail['AgeRange']['Low']) 
-              + ' and ' + str(faceDetail['AgeRange']['High']) + ' years old')
-        print('Here are the other attributes:')
-        print(json.dumps(faceDetail, indent=4, sort_keys=True))
-
-    return len(response['FaceDetails'])
-
-def main():
-    photo='happy.jpg'
-    face_count=detect_faces(photo)
-    print("Faces detected: " + str(face_count))
+    booking = {
+        "admin_email":email,
+        "booking_id":"",
+        "meeting_name":""
+    }
 
 
-if __name__ == "__main__":
-    main()
+    try: 
+        response = dynamodb_client.put_item(
+            TableName='Bookings',
+            Item={ 
+                'admin_email': {
+                    'S': email
+                    },
+                'booking_id': {
+                    'S':booking_id 
+                    }, 
+                'meeting_name': {
+                    'S':meeting_name
+                } 
+            },ReturnConsumedCapacity='TOTAL')
+
+
+        return {
+            "statusCode": 200,
+            "body": json.dumps(response)
+        }
+
+    except ClientError:
+        return {
+            "statusCode": 200,
+            "body": json.dumps(booking)
+        }
+
+    return {
+        "statusCode": 200,
+        "body": json.dumps('profile.get("name")')
+    }
