@@ -8,6 +8,7 @@ import aws_controller
 from PIL import Image
 import os
 import botocore
+from http import cookies
 
 
 APP_CLIENT_ID = "281hf825n7bh0t0s55giarg103"
@@ -42,7 +43,7 @@ def signup():
           
             print("Param Validate Error")
         print(e)
-    return redirect(url_for('lobby'))
+    return redirect(url_for('cognitoRoute.lobby'))
 
 
 @cognitoRoute.route('/auth/resend/confirm/', methods=['POST'])
@@ -132,7 +133,7 @@ def login():
         if e.response['Error']['Code'] == 'UserNotFoundException':
           
             print("Can't Find user by Email")
-            return redirect(url_for('lobby'))
+            return redirect(url_for('cognitoRoute.lobby'))
         if e.response['Error']['Code'] == 'ParamValidationError':
             
             print("Param Validate Error")
@@ -144,9 +145,13 @@ def login():
 
     r = requests.get("https://8c7ymla190.execute-api.us-west-2.amazonaws.com/dev/test_auth", 
     headers={"Authorization": response['AuthenticationResult']['IdToken']})
+    c = cookies.SimpleCookie()
+    c['mycookie'] = response['AuthenticationResult']['IdToken']
+    print(c)
     print(response['AuthenticationResult']['IdToken'])
    
-    return redirect(url_for('cognitoRoute.home'))
+    return render_template('home.html',value=response['AuthenticationResult']['IdToken'])
+    # return redirect(url_for('cognitoRoute.home'),value=response['AuthenticationResult']['IdToken'])
 
 @cognitoRoute.route('/dashboard')
 def home():
