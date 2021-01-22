@@ -191,14 +191,6 @@ def login():
             
             session['username'] = user_email
 
-            # dynamo_response = dynamodb_client.get_item(
-            #     TableName='Users',
-            #     Key={'email': {'S' : user_email}}
-            # )
-
-            # dynamo_userType = dynamo_response['Item']['usertype']['S']
-            # print(dynamo_userType)
-
         except ClientError as e:
             if e.response['Error']['Code'] == 'UserNotFoundException':
                 
@@ -212,7 +204,7 @@ def login():
 
         r = requests.get("https://8c7ymla190.execute-api.us-west-2.amazonaws.com/dev/test_auth", 
         headers={"Authorization": response['AuthenticationResult']['IdToken']})
-        # print(response['AuthenticationResult']['IdToken'])
+        print(response['AuthenticationResult']['IdToken'])
         response_usertype = requests.get("https://xomyksdc28.execute-api.us-west-2.amazonaws.com/dev/profile", 
         headers={"Authorization": session['idToken']})
         print(response_usertype.json()['usertype'])

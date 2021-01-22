@@ -23,30 +23,22 @@ admin_Email = ''
 @dynamoRoute.route('/create_booking', methods=['POST','GET'])
 def create_booking():
     if request.method == 'POST':
-        table = dynamodb.Table('Bookings')
-        global admin_Email
+
+
         letters = string.ascii_lowercase
-        booking_ID=  ''.join(random.choice(letters) for i in range(10)) 
-        client_Name = request.form['cl_name']
-        client_Email = request.form['cl_email']
-        admin_Email = request.form['adm_email']
+        booking_id=  ''.join(random.choice(letters) for i in range(10)) 
+        client_name = request.form['cl_name']
+        client_email = request.form['cl_email']
+        admin_email = request.form['adm_email']
         time = request.form['time']
         date = request.form['date']
-        meeting_Name = request.form['meeting_name']
+        meeting_name = request.form['meeting_name']
 
-        insert_data = {}
-        # print(str(send_email))
+        r = requests.post('https://1r77dpeab4.execute-api.us-west-2.amazonaws.com/dev/booking',
+            headers={"Authorization": session['idToken']},
+            json= {"booking_id":booking_id, "client_name":client_name, "client_email":client_email, "time":time, "meeting_name":meeting_name, "date":date })
 
-        insert_data['admin_email'] = str(admin_Email)
-        insert_data['client_name'] = str(client_Name)
-        insert_data['client_email'] = str(client_Email)
-        insert_data['booking_id'] = str(booking_ID)
-        insert_data['date'] = str(date)
-        insert_data['time'] = str(time)
-        insert_data['meeting_name'] = str(meeting_Name)
 
-        print(insert_data)
-        table.put_item(Item=insert_data)
 
         return render_template("Adminhome.html")
 
@@ -54,38 +46,44 @@ def create_booking():
 
 @dynamoRoute.route('/get_booking', methods=['POST','GET'])
 def get_bookings():
-        # print(admin_Email)
 
+
+        r = requests.get('https://1r77dpeab4.execute-api.us-west-2.amazonaws.com/dev/booking',
+            headers={"Authorization": session['idToken']})
         
-        # dyresponse = table.query(
-        # KeyConditionExpression=Key('admin_email').eq('ali@k.com'))
-
-        # print(dyresponse['Items'])
-
-        # dynamo_response = dynamodb_client.get_item(
-        #         TableName='Bookings',
-        #         Key={'booking_id': {'S' : '12'}})
-
-        # dynamo_userType = dynamo_response['Item']['admin_email']['S']
-        # print(dynamo_userType)
-        # response = dynamodb_client.batch_get_item(RequestItems={
-        #     'Bookings': {
-        #         'Keys': [{
-        #             'admin_email':{
-        #                 'S': 'ali@ali.com'
-        #             }
-        #         }
-        #         ], 
-        #         'AttributesToGet':['meeting_name'],
-        #     },  
-        # })
-        # print(response)
-
-        table = dynamodb.Table('Bookings')
-        response = table.query(
-        KeyConditionExpression=Key('admin_email').eq('ali@ali.com')
-        )
-        # return response['Items']
-        print(response)
+        print(r.json())
 
         return render_template("getbookings.html")
+
+@dynamoRoute.route('/delete_booking', methods=['POST','GET'])
+def delete():
+    table = dynamodb.Table('Bookings')
+
+    # table = dynamodb.Table('practice_mapping')
+    scan = table.query(
+    KeyConditionExpression=Key('admin_email').eq('p@p.com')
+    )
+    with table.batch_writer() as batch:
+        for item in scan['Items']:
+            batch.delete_item(Key={'admin_email':item['admin_email'],'booking_id':item['booking_id']})
+    # try:
+    #     response = table.delete_item(
+    #         Key={
+    #             'admin_email': 'ali@ali.com',
+    #         },
+    #         ConditionExpression=" <= :val",
+    #         ExpressionAttributeValues={
+    #             'meeting_name': 's'
+    #         }
+    #     )
+    
+    # except ClientError as e:
+    #     if e.response['Error']['Code'] == "ConditionalCheckFailedException":
+    #         print(e.response['Error']['Message'])
+    #     else:
+    #         raise
+    # else:
+    #     return render_template("getbookings.html")
+
+    # return response
+    return render_template("getbookings.html")
