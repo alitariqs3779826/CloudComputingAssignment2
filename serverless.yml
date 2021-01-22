@@ -47,3 +47,13 @@ functions:
             type: COGNITO_USER_POOLS
             authorizerId:
               Ref: ApiGatewayAuthorizer
+  delete-profile:
+    handler: main.delete_booking
+    events:
+      - http:
+          path: /booking
+          method: delete
+          authorizer:
+            type: COGNITO_USER_POOLS
+            authorizerId:
+              Ref: ApiGatewayAuthorizer

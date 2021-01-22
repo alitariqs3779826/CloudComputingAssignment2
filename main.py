@@ -110,3 +110,50 @@ def create_booking(event, context):
         "statusCode": 200,
         "body": json.dumps('profile.get("name")')
     }
+
+def delete_booking(event, context):
+    
+    email = event.get("requestContext").get("authorizer").get("claims").get("email")
+    
+    booking = {
+        "admin_email":email,
+        "booking_id":"",
+        "meeting_name":"",
+        "client_name":"",
+        "client_email":"",
+        "date":"",
+        "time":""
+    }
+
+    dynamodb = boto3.resource('dynamodb',  region_name='us-west-2')
+
+    try: 
+        # table = dynamodb.Table('Bookings')
+        # response = table.query(
+        #     KeyConditionExpression=Key('admin_email').eq(email)
+        # )
+        table = dynamodb.Table('Bookings')
+        scan = table.query(
+        KeyConditionExpression=Key('admin_email').eq(email)
+        )
+        with table.batch_writer() as batch:
+            for item in scan['Items']:
+                batch.delete_item(Key={'admin_email':item['admin_email'],'booking_id':item['booking_id']})
+
+
+        return {
+            "statusCode": 200,
+            "body": json.dumps('hello')
+        }
+
+    except ClientError:
+        return {
+            "statusCode": 200,
+            "body": json.dumps(booking)
+        }
+
+
+    return {
+        "statusCode": 200,
+        "body": json.dumps('profile')
+    }
