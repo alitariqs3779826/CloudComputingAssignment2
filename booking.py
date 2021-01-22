@@ -59,31 +59,7 @@ def get_bookings():
 def delete():
     table = dynamodb.Table('Bookings')
 
-    # table = dynamodb.Table('practice_mapping')
-    scan = table.query(
-    KeyConditionExpression=Key('admin_email').eq('p@p.com')
-    )
-    with table.batch_writer() as batch:
-        for item in scan['Items']:
-            batch.delete_item(Key={'admin_email':item['admin_email'],'booking_id':item['booking_id']})
-    # try:
-    #     response = table.delete_item(
-    #         Key={
-    #             'admin_email': 'ali@ali.com',
-    #         },
-    #         ConditionExpression=" <= :val",
-    #         ExpressionAttributeValues={
-    #             'meeting_name': 's'
-    #         }
-    #     )
-    
-    # except ClientError as e:
-    #     if e.response['Error']['Code'] == "ConditionalCheckFailedException":
-    #         print(e.response['Error']['Message'])
-    #     else:
-    #         raise
-    # else:
-    #     return render_template("getbookings.html")
+    r = requests.delete('https://1r77dpeab4.execute-api.us-west-2.amazonaws.com/dev/booking',
+            headers={"Authorization": session['idToken']})
 
-    # return response
     return render_template("getbookings.html")
