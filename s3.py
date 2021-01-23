@@ -103,6 +103,20 @@ def editProfile():
 
     return render_template('edit_profile.html', name = session['name'], password = "password", email = "email", contact =  session['contact'])
 
+@s3Route.route('/change_password',methods=['GET','POST'])
+def change_password():
+    client = boto3.client('cognito-idp')
+    if request.method == 'POST':
+        previous_password = request.form['previous_password']
+        new_password = request.form['new_password']
+        response = client.change_password(
+            PreviousPassword=previous_password,
+            ProposedPassword=new_password,
+            AccessToken=session['token']
+        )
+        return profile()
+    return render_template("change_password.html")
+
 def createBucket():
    
     client = boto3.client('s3')

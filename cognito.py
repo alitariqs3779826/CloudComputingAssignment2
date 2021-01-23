@@ -21,13 +21,31 @@ cognitoRoute = Blueprint('cognitoRoute', __name__)
 send_email =''
 
 
+<<<<<<< Updated upstream
 # @dynamoRoute.route('/create_booking', methods=['POST'])
 # def create_booking_page():
 #     return create_booking()
+=======
+@cognitoRoute.route('/contact', methods=['GET'])
+def contact_page():
+    return render_template('contact.html')
+
+@cognitoRoute.route('/Adminhome')
+def admin_home():
+    return render_template('Adminhome.html')
+
+@cognitoRoute.route('/Userhome')
+def user_home():
+    return render_template('home.html')
+>>>>>>> Stashed changes
 
 @cognitoRoute.route('/auth/signup')
 def create_account():
     return signup()
+
+@cognitoRoute.route('/about')
+def about_page():
+    return render_template("about.html")
 
 @cognitoRoute.route('/')
 def login_page():
@@ -48,6 +66,7 @@ def signup():
         idp_client = boto3.client('cognito-idp')
         usertype = request.form['usertype']
 
+<<<<<<< Updated upstream
         # print(usertype)
 
         # table = dynamodb.Table('Users')
@@ -60,12 +79,13 @@ def signup():
         # insert_data['usertype'] = str(usertype)
         
 
+=======
+>>>>>>> Stashed changes
         try:
             idp_client.sign_up(ClientId=APP_CLIENT_ID,
                             Username=user_email,
                             Password=user_password,
                             UserAttributes=[{'Name': 'name', 'Value': user_name}])
-            # idp_client.admin_add_user_to_group( Username=user_email, GroupName='Admin' )
         except ClientError as e:
             if e.response['Error']['Code'] == 'UsernameExistsException':
                 
@@ -77,16 +97,19 @@ def signup():
                 return redirect(url_for('cognitoRoute.create_account'))
             print(e)
 
+<<<<<<< Updated upstream
         # print(insert_data)
         
         # table.put_item(Item=insert_data)
+=======
+
+>>>>>>> Stashed changes
         r = requests.post('https://xomyksdc28.execute-api.us-west-2.amazonaws.com/dev/add_usertype_profile',
         json= {"name":user_name,"email":user_email,"usertype":usertype})
 
         return redirect(url_for('cognitoRoute.login'))
 
-        # if not went_Inside: 
-        #     return redirect(url_for('cognitoRoute.login'))
+
     return render_template('create_account.html')
 
 
@@ -173,9 +196,13 @@ def login():
         
         global send_email
         
+<<<<<<< Updated upstream
         
 
         # dynamo_userType = ''
+=======
+
+>>>>>>> Stashed changes
 
         try:
             response =  idp_client.initiate_auth(ClientId=APP_CLIENT_ID,
@@ -191,6 +218,10 @@ def login():
             
             session['username'] = user_email
 
+<<<<<<< Updated upstream
+=======
+
+>>>>>>> Stashed changes
         except ClientError as e:
             if e.response['Error']['Code'] == 'UserNotFoundException':
                 
@@ -204,17 +235,32 @@ def login():
 
         r = requests.get("https://8c7ymla190.execute-api.us-west-2.amazonaws.com/dev/test_auth", 
         headers={"Authorization": response['AuthenticationResult']['IdToken']})
+<<<<<<< Updated upstream
         print(response['AuthenticationResult']['IdToken'])
         response_usertype = requests.get("https://xomyksdc28.execute-api.us-west-2.amazonaws.com/dev/profile", 
         headers={"Authorization": session['idToken']})
         print(response_usertype.json())
+=======
+        response_usertype = requests.get("https://xomyksdc28.execute-api.us-west-2.amazonaws.com/dev/profile", 
+        headers={"Authorization": session['idToken']})
+        print(response_usertype.json()['usertype'])
+        session['token'] = response['AuthenticationResult']['AccessToken']
+        print(session['token'])
+>>>>>>> Stashed changes
 
         dynamo_userType = response_usertype.json()['usertype']
 
         if dynamo_userType == 'Normal':
+<<<<<<< Updated upstream
             return render_template("home.html")
         elif dynamo_userType == 'Admin':
             return render_template("Adminhome.html")
+=======
+            return redirect(url_for('cognitoRoute.user_home'))
+        elif dynamo_userType == 'Admin':
+            print("I went here")
+            return redirect(url_for('cognitoRoute.admin_home'))
+>>>>>>> Stashed changes
         
 
         
