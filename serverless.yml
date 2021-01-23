@@ -27,7 +27,7 @@ resources:
 
 
 functions:
-  profile:
+  booking:
     handler: main.booking
     events:
       - http:
@@ -37,7 +37,7 @@ functions:
             type: COGNITO_USER_POOLS
             authorizerId:
               Ref: ApiGatewayAuthorizer
-  update-profile:
+  create-booking:
     handler: main.create_booking
     events:
       - http:
@@ -47,12 +47,32 @@ functions:
             type: COGNITO_USER_POOLS
             authorizerId:
               Ref: ApiGatewayAuthorizer
-  delete-profile:
+  delete-booking:
     handler: main.delete_booking
     events:
       - http:
-          path: /booking
+          path: /delete_booking
           method: delete
+          authorizer:
+            type: COGNITO_USER_POOLS
+            authorizerId:
+              Ref: ApiGatewayAuthorizer
+  edit-booking:
+    handler: main.update_booking
+    events:
+      - http:
+          path: /edit_booking
+          method: post
+          authorizer:
+            type: COGNITO_USER_POOLS
+            authorizerId:
+              Ref: ApiGatewayAuthorizer
+  client-booking:
+    handler: main.get_client_bookings
+    events:
+      - http:
+          path: /client_booking
+          method: get
           authorizer:
             type: COGNITO_USER_POOLS
             authorizerId:
