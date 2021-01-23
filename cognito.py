@@ -207,7 +207,7 @@ def login():
         print(response['AuthenticationResult']['IdToken'])
         response_usertype = requests.get("https://xomyksdc28.execute-api.us-west-2.amazonaws.com/dev/profile", 
         headers={"Authorization": session['idToken']})
-        print(response_usertype.json()['usertype'])
+        print(response_usertype.json())
 
         dynamo_userType = response_usertype.json()['usertype']
 

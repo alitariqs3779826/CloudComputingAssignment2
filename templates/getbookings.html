@@ -1,18 +1,86 @@
-
 <!DOCTYPE html>
 <meta charset="utf-8">
-<html>
-<div class="card">
-    <h1> {{ Meeting_Name }}</h1>
-    <p class="title">{{ date }}</p>
-    <!-- <p> {{ password }}</p> -->
-    <p> {{ time }}</p>
+<style>
+    .square {
+        margin-top: 125px;
+        background: white;
+        width: 10.75vw;
+        height: 10.75vw;
+        border: 5px solid black;
+        text-align: center;
+        background-color: seashell;
+    }
+    .button{
+        background-color: red;
+        text-align: center;
+        color: white;
+        width: 4vw;
+        height: 2vw;
+    }
+
+    /* Add some padding inside the card container */
+    .container {
+        padding: 2px 16px;
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        $('.nav-btn').on('click', function(event) {
+            event.preventDefault();
+            /* Act on the event */
+            $('.sidebar').slideToggle('fast');
     
-    <!-- <a href="#"><i class="fa fa-dribbble"></i></a>
-    <a href="#"><i class="fa fa-twitter"></i></a>
-    <a href="#"><i class="fa fa-linkedin"></i></a>
-    <a href="#"><i class="fa fa-facebook"></i></a> -->
+            window.onresize = function(){
+                if ($(window).width() >= 768) {
+                    $('.sidebar').show();
+                } else {
+                    $('.sidebar').hide();
+                }
+            };
+        });
+    });
+    </script>
+    <header>
+            <div class="logo">Xero<span>Source</span></div>
+            <!-- <link rel="stylesheet" href="dash.css"> -->
+            <link rel= "stylesheet" type= "text/css" href= "{{ url_for('static',filename='css/dash.css') }}">
+
+    
+        </header>
+        <div class="nav-btn">Menu</div>
+        <div class="container">
+            
+            <div class="sidebar">
+                <nav>
+                    <a href="#">Op<span>tions</span></a>
+                    <ul>  
+                        <li ><a href="#">User Dashboard</a></li>
+                        <li><a href="{{ url_for('dynamoRoute.create_booking') }}">Create Booking</a></li>
+                        <li class="active"><a href="{{ url_for('dynamoRoute.get_bookings') }}">View My Bookings</a></li>
+                        <li><a href="#">About</a></li>
+                        <li><a href="#">Contact</a></li>
+                    </ul>
+                </nav>
+            </div>
+    
+            <div class="main-content">
+                <h1>Your Appointments</h1>
+ 
+                <div class="square">
+                    <!-- <img src="img_avatar.png" alt="Avatar" style="width:100%"> -->
+                    <div class="container">
+                      <p>  Client Name: {{ client_name }}</p>
+                      <p>Client Email: {{ client_email }}</p>
+                      <p>Meeting Name: {{ meeting_name }}</p>
+                        <p>Time: {{ client_name }}</p>
+                        <p>Date: {{ date }}</p>
+                      <button class="button" class="button"> Cancel Booking</button> 
+                    </div>
+                  </div>
+                    
+                </div>
+            </div>
+        </div>
+    </html>
 
 
-</div>
-</html>

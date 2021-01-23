@@ -24,7 +24,6 @@ admin_Email = ''
 def create_booking():
     if request.method == 'POST':
 
-
         letters = string.ascii_lowercase
         booking_id=  ''.join(random.choice(letters) for i in range(10)) 
         client_name = request.form['cl_name']
@@ -38,22 +37,20 @@ def create_booking():
             headers={"Authorization": session['idToken']},
             json= {"booking_id":booking_id, "client_name":client_name, "client_email":client_email, "time":time, "meeting_name":meeting_name, "date":date })
 
-
-
         return render_template("Adminhome.html")
 
     return render_template("booking.html")
 
 @dynamoRoute.route('/get_booking', methods=['POST','GET'])
 def get_bookings():
+    r = requests.get('https://1r77dpeab4.execute-api.us-west-2.amazonaws.com/dev/booking',
+    headers={"Authorization": session['idToken']})
+    response_booking = requests.get("https://1r77dpeab4.execute-api.us-west-2.amazonaws.com/dev/booking", 
+    headers={"Authorization": session['idToken']})
+    print(r.json()['Items'][0]['time'])
 
-
-        r = requests.get('https://1r77dpeab4.execute-api.us-west-2.amazonaws.com/dev/booking',
-            headers={"Authorization": session['idToken']})
-        
-        print(r.json())
-
-        return render_template("getbookings.html")
+    return render_template("getbookings.html", client_name = r.json()['Items'][0]['client_name'], date = r.json()['Items'][0]['date']
+    , time = r.json()['Items'][0]['time'], client_email = r.json()['Items'][0]['client_email'], meeting_name = r.json()['Items'][0]['meeting_name'] )
 
 @dynamoRoute.route('/delete_booking', methods=['POST','GET'])
 def delete():
@@ -62,4 +59,30 @@ def delete():
     r = requests.delete('https://1r77dpeab4.execute-api.us-west-2.amazonaws.com/dev/booking',
             headers={"Authorization": session['idToken']})
 
+    return render_template("getbookings.html")
+
+@dynamoRoute.route('/edit_booking', methods=['POST','GET'])
+def edit():
+    # table = boto3.resource('dynamodb').Table('my_table')
+    # print(session['idToken'])
+    # response = table.get_item(Key={'admin_email': '7'})
+    # item = response['Item']
+
+    # item['meeting_name'] = 'PleaseJoinThis'
+
+    # # put (idempotent)
+    # table.put_item(Item=item)
+
+    #
+    r = requests.post('https://1r77dpeab4.execute-api.us-west-2.amazonaws.com/dev/booking',
+            headers={"Authorization": session['idToken']},json= {"client_name":'name',"date":'contact',"time":'t',"client_email":'joe@joe.com',"meeting_name":'pLEASEJOINTHIS',"booking_id":'asad'})
+
+    # table = boto3.resource('dynamodb').Table('Bookings')
+
+    # table.update_item(
+    #     Key={'admin_email': 'kuch@bhi.com'},
+    #     AttributeUpdates={
+    #         'meeting_name': 'hujabhai'
+    #     },
+    # )
     return render_template("getbookings.html")
