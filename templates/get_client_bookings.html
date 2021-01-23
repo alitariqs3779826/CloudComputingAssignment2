@@ -141,7 +141,6 @@
                     <a href="#">Op<span>tions</span></a>
                     <ul>  
                         <li ><a href="#">User Dashboard</a></li>
-                        <li><a href="{{ url_for('dynamoRoute.create_booking') }}">Create Booking</a></li>
                         <li class="active"><a href="{{ url_for('dynamoRoute.get_bookings') }}">View My Bookings</a></li>
                         <li><a href="#">About</a></li>
                         <li><a href="#">Contact</a></li>
@@ -154,14 +153,13 @@
                 <table class="styled-table">
                     <thead>
                         <tr>
-                            <th>Edit Booking</th>
+
                             <th>Booking ID</th>
                             <th>Client Name</th>
-                            <th>Client Email</th>
                             <th>Meeting Name</th>
                             <th>Date</th>
                             <th>Time</th>
-                            <th>Cancel Booking</th>
+
                             
 
                         </tr>
@@ -170,92 +168,19 @@
                     <tbody>
                        {% for bookings in booking_ids %}
                         <tr class="active-row"> 
-                            <td class="styled-tables"> <button id="myBtun" class="myButton">  Edit Booking</button> </td></a>  
                             <td name="booking_id" class="styled-tables"> {{ bookings }} </td>
                             <td  class="styled-tables"> {{ names[loop.index0]}} </td>
-                            <td class="styled-tables"> {{ emails[loop.index0]}} </td>
                             <td class="styled-tables"> {{ meeting_names[loop.index0]}} </td>      
                             <td class="styled-tables"> {{ dates[loop.index0]}} </td>      
                             <td class="styled-tables"> {{ times[loop.index0]}} </td>  
-                            <td class="styled-tables"> <button id="myBtn" class="button">  Cancel Booking</button> </td></a>  
                         </tr>
                         {% endfor %}   
                     </tbody>
                     
                     
                 </table>
-                <div id="myModal" class="modal">
-
-                    
-                    <div class="modal-content">
-                    <span class="close">&times;</span>
-                    <form method="post" action="/delete_booking">
-                        <p>To confirm enter Booking ID: <input name="booking_id" type="text" required></p>
-                        <p><a ><button type="submit" class="button">Cancel Booking</p></a>
-                    </form>
-                    </div>
-                  
-                  </div>
-                </div>
-                <div id="myModel" class="modal">
-
-                    <div class="modal-content">
-                    <span class="close">&times;</span>
-                    <form method="post" action="/edit_booking">
-                        <p>To confirm enter Booking ID: <input name="edit_booking_id" type="text" required></p>
-                        <p>New Client Name <input name="client_name" type="text" required></p>
-                        <p>New Client Email <input name="client_email" type="text" required></p>
-                        <p>New Meeting Name <input name="meeting_name" type="text" required></p>
-                        <p>New Date <input name="date" type="text" required></p>
-                        <p>New Time <input name="time" type="text" required></p>
-                        <p><a ><button type="submit" class="myButton">Edit Booking</p></a>
-                    </form>
-                    </div>
-                  
-                  </div>
-                </div> 
-                <script>
-                    // Get the modal
-                    var modal = document.getElementById("myModal");
-                    var model = document.getElementById("myModel");
-
-                    // Get the button that opens the modal
-                    var btn = document.getElementById("myBtn");
-                    var btns = document.getElementById("myBtun");
-
-                    
-                    // Get the <span> element that closes the modal
-                    var span = document.getElementsByClassName("close")[0];
-                    
-                    // When the user clicks the button, open the modal 
-                    btn.onclick = function() {
-                      modal.style.display = "block";
-                    }
-
-                    btns.onclick = function(){
-                        model.style.display = "block";
-                    }
-                    
-                    // When the user clicks on <span> (x), close the modal
-                    span.onclick = function() {
-                      modal.style.display = "none";
-                    }
-                    span.onclick = function() {
-                      model.style.display = "none";
-                    }
-                    
-                    // When the user clicks anywhere outside of the modal, close it
-                    window.onclick = function(event) {
-                      if (event.target == modal) {
-                        modal.style.display = "none";
-                      }
-                    }
-                    window.onclick = function(event) {
-                      if (event.target == model) {
-                        model.style.display = "none";
-                      }
-                    }
-                </script>
+                
+                
             </div>
         </div>
     </html>

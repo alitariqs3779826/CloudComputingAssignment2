@@ -32,7 +32,7 @@
                     <a href="#">Op<span>tions</span></a>
                     <ul>
                         <li class="active"><a href="#">User Dashboard</a></li>
-                        <li><a href="#">View My Bookings</a></li>
+                        <li><a href="{{ url_for('dynamoRoute.get_booking_for_user') }}">View My Bookings</a></li>
                         <li><a href="#">About</a></li>
                         <li><a href="#">Contact</a></li>
                     </ul>
@@ -44,18 +44,10 @@
                 <p>Whats new?</p>
                 <div class="panel-wrapper">
                     <div class="panel-head">
-                        News
+                        Video Call
                     </div>
                     <div class="panel-body">
-                        Lorem ipsum dolor sit amet, consectetur adipisicing elit. Totam fugiat culpa quia possimus molestiae id sapiente ad eveniet, aliquid, eum sint fuga eius, ratione suscipit ut minus voluptates dicta nesciunt.
-                    </div>
-                </div>
-                <div class="panel-wrapper">
-                    <div class="panel-head">
-                        News
-                    </div>
-                    <div class="panel-body">
-                        Lorem ipsum dolor sit amet, consectetur adipisicing elit. Totam fugiat culpa quia possimus molestiae id sapiente ad eveniet, aliquid, eum sint fuga eius, ratione suscipit ut minus voluptates dicta nesciunt.
+                        <button class="button_join_call">Join Your Call</button>
                     </div>
                 </div>
                 <div class="panel-wrapper">

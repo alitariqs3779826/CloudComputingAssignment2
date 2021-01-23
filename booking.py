@@ -11,6 +11,8 @@ import os
 import botocore
 import string
 import random
+from cognito import cognitoRoute
+
 
 APP_CLIENT_ID = "281hf825n7bh0t0s55giarg103"
 dynamoRoute = Blueprint('dynamoRoute', __name__)
@@ -45,21 +47,6 @@ def create_booking():
 def get_bookings():
     r = requests.get('https://1r77dpeab4.execute-api.us-west-2.amazonaws.com/dev/booking',
     headers={"Authorization": session['idToken']})
-<<<<<<< Updated upstream
-    response_booking = requests.get("https://1r77dpeab4.execute-api.us-west-2.amazonaws.com/dev/booking", 
-    headers={"Authorization": session['idToken']})
-    print(r.json()['Items'][0]['time'])
-
-    return render_template("getbookings.html", client_name = r.json()['Items'][0]['client_name'], date = r.json()['Items'][0]['date']
-    , time = r.json()['Items'][0]['time'], client_email = r.json()['Items'][0]['client_email'], meeting_name = r.json()['Items'][0]['meeting_name'] )
-
-@dynamoRoute.route('/delete_booking', methods=['POST','GET'])
-def delete():
-    table = dynamodb.Table('Bookings')
-
-    r = requests.delete('https://1r77dpeab4.execute-api.us-west-2.amazonaws.com/dev/booking',
-            headers={"Authorization": session['idToken']})
-=======
     number_of_elements = r.json()['Count']
 
     
@@ -89,44 +76,55 @@ def delete():
 @dynamoRoute.route('/delete_booking', methods=['POST','GET'])
 def delete():
     if request.method == 'POST':
+        print('please_print')
         booking_id = request.form['booking_id']
-        print(client_name)
+        
         table = dynamodb.Table('Bookings')
-        r = requests.delete('https://1r77dpeab4.execute-api.us-west-2.amazonaws.com/dev/booking',
+        r = requests.delete('https://1r77dpeab4.execute-api.us-west-2.amazonaws.com/dev/delete_booking',
             headers={"Authorization": session['idToken']}, json= {"booking_id":booking_id})
->>>>>>> Stashed changes
-
+        return redirect(url_for('cognitoRoute.admin_home'))
     return render_template("getbookings.html")
 
 @dynamoRoute.route('/edit_booking', methods=['POST','GET'])
 def edit():
-<<<<<<< Updated upstream
-    # table = boto3.resource('dynamodb').Table('my_table')
-    # print(session['idToken'])
-    # response = table.get_item(Key={'admin_email': '7'})
-    # item = response['Item']
-
-    # item['meeting_name'] = 'PleaseJoinThis'
-
-    # # put (idempotent)
-    # table.put_item(Item=item)
-
-    #
-    r = requests.post('https://1r77dpeab4.execute-api.us-west-2.amazonaws.com/dev/booking',
-            headers={"Authorization": session['idToken']},json= {"client_name":'name',"date":'contact',"time":'t',"client_email":'joe@joe.com',"meeting_name":'pLEASEJOINTHIS',"booking_id":'asad'})
-
-    # table = boto3.resource('dynamodb').Table('Bookings')
-
-    # table.update_item(
-    #     Key={'admin_email': 'kuch@bhi.com'},
-    #     AttributeUpdates={
-    #         'meeting_name': 'hujabhai'
-    #     },
-    # )
+    if request.method == 'POST':
+        print('h')
+        client_name = request.form['client_name']
+        client_email = request.form['client_email']
+        date = request.form['date']
+        time = request.form['time']
+        meeting_name = request.form['meeting_name']
+        booking_id = request.form['edit_booking_id']
+        print(client_name)
+        r = requests.post('https://1r77dpeab4.execute-api.us-west-2.amazonaws.com/dev/edit_booking',
+            headers={"Authorization": session['idToken']},json= {"client_name":client_name,"date":date,"time":time,"client_email":client_email,"meeting_name":meeting_name,"booking_id":booking_id})
+        print(r)
+        return redirect(url_for('cognitoRoute.admin_home'))
     return render_template("getbookings.html")
-=======
-    r = requests.post('https://1r77dpeab4.execute-api.us-west-2.amazonaws.com/dev/booking',
-            headers={"Authorization": session['idToken']},json= {"client_name":'name',"date":'contact',"time":'t',"client_email":'joe@joe.com',"meeting_name":'pLEASEJOINTHIS',"booking_id":'asad'})
 
-    return render_template("getbookings.html")
->>>>>>> Stashed changes
+@dynamoRoute.route('/get_booking_for_user', methods=['POST','GET'])
+def get_booking_for_user():
+
+    r = requests.get('https://1r77dpeab4.execute-api.us-west-2.amazonaws.com/dev/client_booking',
+            headers={"Authorization": session['idToken']})
+    
+    client_name = []
+    date = []
+    time = []
+    booking_id = []
+    meeting_name = []
+
+    number_of_elements = r.json()['Count']
+
+    for i in range(number_of_elements):
+        client_name.append(r.json()['Items'][i]['client_name']['S'])
+        date.append(r.json()['Items'][i]['date']['S'])
+        time.append(r.json()['Items'][i]['time']['S'])
+        booking_id.append(r.json()['Items'][i]['booking_id']['S'])
+        meeting_name.append(r.json()['Items'][i]['meeting_name']['S'])
+    
+    print(r.json())
+    
+    return render_template("get_client_bookings.html", names = client_name, dates = date, times = time
+        , booking_ids = booking_id, meeting_names = meeting_name)
+
