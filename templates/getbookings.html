@@ -140,11 +140,11 @@
                 <nav>
                     <a href="#">Op<span>tions</span></a>
                     <ul>  
-                        <li ><a href="#">User Dashboard</a></li>
+                        <li ><a href="{{ url_for('cognitoRoute.admin_home') }}">User Dashboard</a></li>
                         <li><a href="{{ url_for('dynamoRoute.create_booking') }}">Create Booking</a></li>
                         <li class="active"><a href="{{ url_for('dynamoRoute.get_bookings') }}">View My Bookings</a></li>
-                        <li><a href="#">About</a></li>
-                        <li><a href="#">Contact</a></li>
+                        <li><a href="{{ url_for('cognitoRoute.about_page') }}">About</a></li>
+                        <li><a href="{{ url_for('cognitoRoute.contact_page') }}">Contact</a></li>
                     </ul>
                 </nav>
             </div>

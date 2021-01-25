@@ -9,7 +9,8 @@ from PIL import Image
 import os
 import botocore
 
-
+client = boto3.client('s3', region_name='us-west-2')
+s3_client = boto3.client('s3', region_name='us-west-2')
 
 APP_CLIENT_ID = "281hf825n7bh0t0s55giarg103"
 config = "static/img"
@@ -44,7 +45,6 @@ def profile():
     # path = app.config["IMAGE_UPLOADS"]+"/"+r.json()['email']+".png"
     # s3 = boto3.resource('s3')
     # s3.Object('profilebucket', str(name)+".png").load()
-    s3_client = boto3.client('s3', region_name='us-west-2')
     url = s3_client.generate_presigned_url('get_object',
                                 Params={
                                     'Bucket': 'profilebucket',
@@ -71,7 +71,6 @@ def editProfile():
         # password = request.form['password']
         if request.files:
         
-            s3_client = boto3.client('s3', region_name='us-west-2')
             image = request.files["image"]
             print(session['username'])
             image.save(os.path.join(config, str(session['username'])+".png"))
@@ -105,7 +104,6 @@ def editProfile():
 
 @s3Route.route('/change_password',methods=['GET','POST'])
 def change_password():
-    client = boto3.client('cognito-idp')
     if request.method == 'POST':
         previous_password = request.form['previous_password']
         new_password = request.form['new_password']
@@ -119,7 +117,7 @@ def change_password():
 
 def createBucket():
    
-    client = boto3.client('s3')
+    
     try:
 
         response = client.create_bucket(

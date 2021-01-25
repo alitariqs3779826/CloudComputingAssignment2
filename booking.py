@@ -18,9 +18,10 @@ APP_CLIENT_ID = "281hf825n7bh0t0s55giarg103"
 dynamoRoute = Blueprint('dynamoRoute', __name__)
 
 dynamodb = boto3.resource('dynamodb',  region_name='us-west-2')
-dynamodb_client = boto3.client('dynamodb', region_name="us-west-2")
 
-admin_Email = ''
+@dynamoRoute.route('/create_booking', methods=['GET'])
+def create_booking_page():
+    return render_template('booking.html')
 
 @dynamoRoute.route('/create_booking', methods=['POST','GET'])
 def create_booking():
@@ -39,11 +40,12 @@ def create_booking():
             headers={"Authorization": session['idToken']},
             json= {"booking_id":booking_id, "client_name":client_name, "client_email":client_email, "time":time, "meeting_name":meeting_name, "date":date })
 
-        return render_template("Adminhome.html")
+        return redirect(url_for('cognitoRoute.admin_home'))
 
-    return render_template("booking.html")
+    return redirect(url_for('dynamoRoute.create_booking_page'))
 
-@dynamoRoute.route('/get_booking', methods=['POST','GET'])
+
+@dynamoRoute.route('/booking', methods=['POST','GET'])
 def get_bookings():
     r = requests.get('https://1r77dpeab4.execute-api.us-west-2.amazonaws.com/dev/booking',
     headers={"Authorization": session['idToken']})
@@ -102,7 +104,7 @@ def edit():
         return redirect(url_for('cognitoRoute.admin_home'))
     return render_template("getbookings.html")
 
-@dynamoRoute.route('/get_booking_for_user', methods=['POST','GET'])
+@dynamoRoute.route('/client_bookings', methods=['POST','GET'])
 def get_booking_for_user():
 
     r = requests.get('https://1r77dpeab4.execute-api.us-west-2.amazonaws.com/dev/client_booking',
@@ -123,7 +125,6 @@ def get_booking_for_user():
         booking_id.append(r.json()['Items'][i]['booking_id']['S'])
         meeting_name.append(r.json()['Items'][i]['meeting_name']['S'])
     
-    print(r.json())
     
     return render_template("get_client_bookings.html", names = client_name, dates = date, times = time
         , booking_ids = booking_id, meeting_names = meeting_name)

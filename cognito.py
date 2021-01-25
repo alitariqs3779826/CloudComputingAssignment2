@@ -12,7 +12,7 @@ import botocore
 
 APP_CLIENT_ID = "281hf825n7bh0t0s55giarg103"
 
-
+cognito_client = boto3.client('cognito-idp', region_name='us-west-2')
 dynamodb = boto3.resource('dynamodb',  region_name='us-west-2')
 dynamodb_client = boto3.client('dynamodb', region_name="us-west-2")
 
@@ -25,29 +25,34 @@ send_email =''
 def contact_page():
     return render_template('contact.html')
 
-@cognitoRoute.route('/Adminhome')
+@cognitoRoute.route('/contact_user', methods=['GET'])
+def contact_page_user():
+    return render_template('contact_user.html')
+
+@cognitoRoute.route('/Adminhome', methods=['GET'])
 def admin_home():
     return render_template('Adminhome.html')
 
-@cognitoRoute.route('/Userhome')
+@cognitoRoute.route('/Userhome', methods=['GET'])
 def user_home():
     return render_template('home.html')
 
-@cognitoRoute.route('/auth/signup')
+@cognitoRoute.route('/auth/signup', methods=['GET'])
 def create_account():
-    return signup()
+    return render_template("create_account.html")
 
-@cognitoRoute.route('/about')
+@cognitoRoute.route('/about', methods=['GET'])
 def about_page():
     return render_template("about.html")
 
-@cognitoRoute.route('/')
-def login_page():
-    return redirect(url_for('cognitoRoute.login'))
+@cognitoRoute.route('/about_user', methods=['GET'])
+def about_page_user():
+    return render_template("about_user.html")
 
-@cognitoRoute.route('/auth/forgot/password/')
-def forget_password_page():
-    return render_template('forgot_password.html')
+@cognitoRoute.route('/', methods=['GET'])
+def login_page():
+    return render_template("login.html")
+
 
 
 
@@ -57,11 +62,10 @@ def signup():
         user_email = request.form['Email']
         user_password = request.form['Password']
         user_name = request.form['Username']
-        idp_client = boto3.client('cognito-idp')
         usertype = request.form['usertype']
 
         try:
-            idp_client.sign_up(ClientId=APP_CLIENT_ID,
+            cognito_client.sign_up(ClientId=APP_CLIENT_ID,
                             Username=user_email,
                             Password=user_password,
                             UserAttributes=[{'Name': 'name', 'Value': user_name}])
@@ -83,80 +87,8 @@ def signup():
         return redirect(url_for('cognitoRoute.login'))
 
 
-    return render_template('create_account.html')
+    return redirect(url_for('cognitoRoute.create_account'))
 
-
-@cognitoRoute.route('/auth/resend/confirm/', methods=['POST'])
-def resend_confirm():
-    user_email = request.form['Email']
-
-    idp_client = boto3.client('cognito-idp')
-    try:
-        idp_client.resend_confirmation_code(ClientId=APP_CLIENT_ID,
-                                            Username=user_email)
-    except ClientError as e:
-        if e.response['Error']['Code'] == 'UserNotFoundException':
-         
-            print("Can't Find user by Email")
-        if e.response['Error']['Code'] == 'ParamValidationError':
-         
-            print("Param Validate Error")
-        print(e)
-    return redirect(url_for('cognitoRoute.lobby'))
-
-
-@cognitoRoute.route('/auth/confirm/signup/', methods=['POST'])
-def confirm_sign_up():
-    if request.method == 'POST':
-        user_email = request.form['Email']
-        confirm_code = request.form['ConfirmCode']
-
-        idp_client = boto3.client('cognito-idp')
-        try:
-            idp_client.confirm_sign_up(ClientId=APP_CLIENT_ID,
-                                        Username=user_email,
-                                        ConfirmationCode=confirm_code)
-        except ClientError as e:
-            if e.response['Error']['Code'] == 'UserNotFoundException':
-                # Todo Handle Not Found User
-                print("Can't Find user by Email")
-            if e.response['Error']['Code'] == 'CodeMismatchException':
-                # Todo Handle Code Mismatch
-                print("User Code Mismatch")
-            if e.response['Error']['Code'] == 'ParamValidationError':
-                # Todo Handle Param Validate
-                print("Param Validate Error")
-            if e.response['Error']['Code'] == 'ExpiredCodeException':
-                # Todo Handle Expired Code
-                print("Expired Code")
-            print(e)
-    return redirect(url_for('signup_confirmation_page'))
-
-
-@cognitoRoute.route('/auth/forgot/password/', methods=['POST'])
-def forgot_password():
-    user_email = request.form['Email']
-
-    idp_client = boto3.client('cognito-idp')
-   
-    try:
-        idp_client.forgot_password(ClientId=APP_CLIENT_ID,
-                                   Username=user_email)
-    except ClientError as e:
-        if e.response['Error']['Code'] == 'UserNotFoundException':
-            
-            print("Can't Find user by Email")
-            return redirect(url_for('cognitoRoute.forget_password_page'))
-        if e.response['Error']['Code'] == 'ParamValidationError':
-            
-            print("Param Validate Error")
-            return redirect(url_for('cognitoRoute.forget_password_page'))
-    
-    return redirect(url_for('cognitoRoute.login'))
-
-    print(e)
-
-    return redirect(url_for('cognitoRoute.forget_password_page'))
 
 @cognitoRoute.route('/auth/login', methods=['GET','POST'])
 def login():
@@ -164,7 +96,6 @@ def login():
         user_email = request.form['Email']
         password = request.form['Password']
 
-        idp_client = boto3.client('cognito-idp')
         response = None
         
         global send_email
@@ -172,7 +103,7 @@ def login():
 
 
         try:
-            response =  idp_client.initiate_auth(ClientId=APP_CLIENT_ID,
+            response =  cognito_client.initiate_auth(ClientId=APP_CLIENT_ID,
                                         AuthFlow='USER_PASSWORD_AUTH',
                                         AuthParameters={
                                         'USERNAME': user_email,
@@ -206,53 +137,12 @@ def login():
         print(session['token'])
 
         dynamo_userType = response_usertype.json()['usertype']
+        print(dynamo_userType)
 
         if dynamo_userType == 'Normal':
             return redirect(url_for('cognitoRoute.user_home'))
         elif dynamo_userType == 'Admin':
-            print("I went here")
             return redirect(url_for('cognitoRoute.admin_home'))
-        
+       
+    return redirect(url_for('cognitoRoute.login_page'))
 
-        
-
-
-        return render_template("home.html")
-   
-    return render_template('login.html')
-
-@cognitoRoute.route('/dashboard')
-def home():
-    return render_template('home.html')
-
-
-@cognitoRoute.route('/auth/confirm/forgot/password/', methods=['POST'])
-def confirm_forgot_password():
-    user_email = request.form['Email']
-    confirm_code = request.form['ConfirmCode']
-    random_password = '!1a+random'
-
-    idp_client = boto3.client('cognito-idp')
-    try:
-        idp_client.confirm_forgot_password(ClientId=APP_CLIENT_ID,
-                                           Username=user_email,
-                                           ConfirmationCode=confirm_code,
-                                           Password=random_password)
-
-    except ClientError as e:
-        if e.response['Error']['Code'] == 'UserNotFoundException':
-          
-            print("Can't Find user by Email")
-        if e.response['Error']['Code'] == 'CodeMismatchException':
-            print("User Code Mismatch")
-        if e.response['Error']['Code'] == 'ParamValidationError':
-           
-            print("Param Validate Error")
-        if e.response['Error']['Code'] == 'ExpiredCodeException':
-            print("Expired Code")
-
-    return redirect(url_for('cognitoRoute.lobby'))
-
-
-def return_email():
-    return send_email

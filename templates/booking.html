@@ -36,7 +36,7 @@
                         <li ><a href="{{ url_for('cognitoRoute.admin_home') }}">User Dashboard</a></li>
                         <li class="active"><a href="{{ url_for('dynamoRoute.create_booking') }}">Create Booking</a></li>
                         <li><a href="{{ url_for('dynamoRoute.get_bookings') }}">View My Bookings</a></li>
-                        <li><a href="#">About</a></li>
+                        <li><a href="{{ url_for('cognitoRoute.about_page') }}">About</a></li>
                         <li><a href="{{ url_for('cognitoRoute.contact_page') }}">Contact</a></li>
                     </ul>
                 </nav>
@@ -72,58 +72,3 @@
         </div>
     </html>
 
-
-<!-- <!DOCTYPE html>
-<meta charset="utf-8">
-
-<html>
-<body>
-Home
-<button type="submit"  onclick="location.href='/profile'" class="button is-success">Profile</button>
-
-
-</body>
-</html>
-
-<!DOCTYPE html>
-<meta charset="utf-8">
-<head>
-    <link rel= "stylesheet" type= "text/css" href= "{{ url_for('static',filename='css/booking.css') }}">
-    </head>
-<html>
-
-<div class="box">
-	<a class="button" href="#popup1">Create Booking</a>
-</div>
-
-<div id="popup1" class="overlay">
-	<div class="popup">
-		<h2>Enter Details</h2>
-		<a class="close" href="#">&times;</a>
-		<div class="content">
-            <form action="/create_booking" method="post">
-                <p><input type="text" name="adm_email" class="username form-control" placeholder="Admin Email"/></p>
-                <p><input type="text" name="cl_email" class="password form-control" placeholder="Client Email"/></p>
-                <p><input type="text" name="cl_name" class="password form-control" placeholder="Client Name"/></p>
-                <p><input type="text" name="time" class="password form-control" placeholder="Time"/></p>
-                <p><input type="text" name="date" class="password form-control" placeholder="Date"/></p>
-                <p><input type="text" name="meeting_name" class="password form-control" placeholder="Meeting Name"/></p>
-                <p><input class="btn login" type="submit" value="Create Booking" /></p>
-              </form>
-	</div>
-</div>
-Trigger-->
-<!-- <a class="login-trigger" href="#" data-target="#login" data-toggle="modal">Create Booking</a> -->
-
-<!-- <div id="login" class="modal fade" role="dialog">
-  <div class="modal-dialog">
-    
-    <div class="modal-content">
-      <div class="modal-body">
-        
-        
-      </div>
-    </div>
-  </div>  
-</div>
-</html> --> 
