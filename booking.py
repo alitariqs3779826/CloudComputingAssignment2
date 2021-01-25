@@ -4,9 +4,6 @@ import boto3
 from boto3.dynamodb.conditions import Key
 from botocore.exceptions import ClientError
 import requests
-import aws_controller
-from PIL import Image
-from cognito import send_email
 import os
 import botocore
 import string

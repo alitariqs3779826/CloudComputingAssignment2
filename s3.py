@@ -4,7 +4,6 @@ from flask import Flask, render_template, redirect, url_for, request, jsonify, s
 import boto3
 from botocore.exceptions import ClientError
 import requests
-import aws_controller
 from PIL import Image
 import os
 import botocore
@@ -14,7 +13,6 @@ s3_client = boto3.client('s3', region_name='us-west-2')
 
 APP_CLIENT_ID = "281hf825n7bh0t0s55giarg103"
 config = "static/img"
-# app.secret_key = '281hf825n7bh0t0s55giarg103'
 
 s3Route = Blueprint('s3Route', __name__)
 

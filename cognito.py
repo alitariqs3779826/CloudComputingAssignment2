@@ -1,11 +1,8 @@
-
 import os
 from flask import Flask, render_template, redirect, url_for, request, jsonify, session, Blueprint
 import boto3
 from botocore.exceptions import ClientError
 import requests
-import aws_controller
-from PIL import Image
 import os
 import botocore
 
