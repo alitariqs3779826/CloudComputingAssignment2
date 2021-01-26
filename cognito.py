@@ -123,7 +123,9 @@ def login():
                 
                 print("Param Validate Error")
                 return redirect(url_for('cognitoRoute.login_page'))
-            print(e)
+            if e.response['Error']['Code'] == 'NotAuthorizedException':
+                print("Not Valid")
+                return redirect(url_for('cognitoRoute.login_page'))
 
         r = requests.get("https://8c7ymla190.execute-api.us-west-2.amazonaws.com/dev/test_auth", 
         headers={"Authorization": response['AuthenticationResult']['IdToken']})
@@ -131,7 +133,7 @@ def login():
         headers={"Authorization": session['idToken']})
         print(response_usertype.json()['usertype'])
         session['token'] = response['AuthenticationResult']['AccessToken']
-        print(session['token'])
+        print(session['idToken'])
 
         dynamo_userType = response_usertype.json()['usertype']
         print(dynamo_userType)

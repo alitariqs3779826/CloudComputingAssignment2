@@ -10,6 +10,7 @@ import botocore
 
 client = boto3.client('s3', region_name='us-west-2')
 s3_client = boto3.client('s3', region_name='us-west-2')
+cognito_client = boto3.client('cognito-idp')
 
 APP_CLIENT_ID = "281hf825n7bh0t0s55giarg103"
 config = "static/img"
@@ -24,13 +25,15 @@ logged_password = ''
 
 
 
-@s3Route.route('/profile')
+@s3Route.route('/profile', methods=['GET','POST'])
 def profile():
     print(session['idToken'])
     # os.remove(os.path.join(app.config["IMAGE_UPLOADS"], str(session['username'])+".png"))
     r = requests.get("https://xomyksdc28.execute-api.us-west-2.amazonaws.com/dev/profile", 
     headers={"Authorization": session['idToken']})
-    
+    dynamo_userType = r.json()['usertype']
+    print(dynamo_userType)
+
     global dbName 
     global dbContact 
 
@@ -50,8 +53,14 @@ def profile():
                                 },                                  
                                 ExpiresIn=3600)
     print(url)
-    
-    return render_template('profile.html',name = r.json()['name'],contact = r.json()['contact'],email = r.json()['email'], password = r.json()['password'],user_image = url)
+
+    if dynamo_userType == "Admin":
+        return render_template('profile.html',name = r.json()['name'],contact = r.json()['contact'],email = r.json()['email'], password = r.json()['password'],user_image = url)
+    elif dynamo_userType == "Normal":
+        return render_template('user_profile.html',name = r.json()['name'],contact = r.json()['contact'],email = r.json()['email'], password = r.json()['password'],user_image = url)
+
+    return " "
+
 
 @s3Route.route('/get-items')
 def get_items():
@@ -63,6 +72,7 @@ def get_items():
 def editProfile():
     if request.method  == 'POST':
         print("h")
+        print("I am INSIDIIEIIEIEI")
         name = request.form['name']
         # email = request.form['email']
         contact = request.form['contact']
@@ -105,13 +115,13 @@ def change_password():
     if request.method == 'POST':
         previous_password = request.form['previous_password']
         new_password = request.form['new_password']
-        response = client.change_password(
+        response = cognito_client.change_password(
             PreviousPassword=previous_password,
             ProposedPassword=new_password,
             AccessToken=session['token']
         )
         return profile()
-    return render_template("change_password.html")
+    return redirect(url_for('s3Route.profile'))
 
 def createBucket():
    

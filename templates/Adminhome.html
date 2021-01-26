@@ -51,7 +51,9 @@
             </div>
     
             <div class="main-content">
-                <h1>Dashboard</h1>
+                <p><h1>Dashboard</h1>
+                    <a href="{{ url_for('cognitoRoute.login') }}"><button class="button_log_out">Logout</button></a>
+                </p>
                 <p>Whats new?</p>
                 <div class="panel-wrapper">
                      <div class="panel-head">
@@ -76,7 +78,7 @@
 
                     <div class="panel-body">
                         Check if your details are correct: 
-                        <button type="submit"  onclick="location.href='/profile'" >Profile</button>
+                        <button type="submit"  class="button_join_call"  onclick="location.href='/profile'" >Profile</button>
                     </div>
                 </div>
             </div>

@@ -40,9 +40,33 @@ a {
 	background-color: darkblue;
 	color: white;
 	text-align: center;
-    /* color: white; */
     width: 7vw;
-    height: 3vw;
+	height: 3vw;
+	border-color: white;
+}
+
+.button_log_out{
+	background-color: orange;
+	color: white;
+	text-align: center;
+	border-color: white;
+    width: 7vw;
+	height: 3vw;
+    margin:-11px ;
+    float:right;
+    top:-20px;
+}
+
+.button_log_out_get{
+	background-color: orange;
+	color: white;
+	text-align: center;
+	border-color: white;
+    width: 7vw;
+	height: 3vw;
+    margin:-30px ;
+    float:right;
+    top:-20px;
 }
 
 header {
