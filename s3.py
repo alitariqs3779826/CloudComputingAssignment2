@@ -9,8 +9,9 @@ import os
 import botocore
 
 client = boto3.client('s3', region_name='us-west-2')
-s3_client = boto3.client('s3', region_name='us-west-2')
-cognito_client = boto3.client('cognito-idp')
+s3_client = boto3.client('s3', aws_access_key_id="AKIAZBIFBU4JBIPGZ5EP",
+    aws_secret_access_key="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",region_name='us-west-2')
+cognito_client = boto3.client('cognito-idp', region_name='us-west-2')
 
 APP_CLIENT_ID = "281hf825n7bh0t0s55giarg103"
 config = "static/img"
@@ -39,13 +40,6 @@ def profile():
 
     session['name'] = r.json()['name']
     session['contact'] = r.json()['contact']
-    # download_image(r.json()['email'])
-    # image_object = s3 lookup based on file-name
-    # get url of image
-    # if image not uploaded - get default image path (can be local)
-    # path = app.config["IMAGE_UPLOADS"]+"/"+r.json()['email']+".png"
-    # s3 = boto3.resource('s3')
-    # s3.Object('profilebucket', str(name)+".png").load()
     url = s3_client.generate_presigned_url('get_object',
                                 Params={
                                     'Bucket': 'profilebucket',
@@ -115,11 +109,19 @@ def change_password():
     if request.method == 'POST':
         previous_password = request.form['previous_password']
         new_password = request.form['new_password']
-        response = cognito_client.change_password(
-            PreviousPassword=previous_password,
-            ProposedPassword=new_password,
-            AccessToken=session['token']
-        )
+        try:
+            
+            response = cognito_client.change_password(
+                PreviousPassword=previous_password,
+                ProposedPassword=new_password,
+                AccessToken=session['token']
+            )
+
+        except ClientError as e:
+            if e.response['Error']['Code'] == 'ParamValidationError':
+                print("Param Validate Error")
+                return redirect(url_for('s3Route.profile'))
+
         return profile()
     return redirect(url_for('s3Route.profile'))
 

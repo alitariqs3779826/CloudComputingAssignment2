@@ -156,9 +156,9 @@
                 <span class="close">&times;</span>
                 <form id="login-form" action="/change_password" method="post">
                     <p><label for="password">Previous Password</label>
-                    <input type="password" id="email"  name="previous_password" /></p>
+                    <input type="password" id="email"  name="previous_password" required/></p>
                     <p><label for="password">New Password</label>
-                    <input type="password" id="email"  name="new_password" /></p>
+                    <input type="password" id="email"  name="new_password" required/></p>
                     <p><button type="submit" class= "sbutton">Change Password</button></p>
                 </form>
             </div>
@@ -178,8 +178,8 @@
                     <form action="/edit_profile" method="post" enctype="multipart/form-data">
                         <label>Select image</label>
                           <input type="file" class="custom-file-input" name="image" id="image">
-                          <label class="custom-file-label" for="image">Select image...</label>
-                
+                          <label class="custom-file-label" for="image"></label>
+                          <br>
                           Name: <input type="text" name="name" id="username-field" class="login-form-field" value = {{name}}></input><br>
                           Contact: <input type="text" name="contact" id="username-field" class="login-form-field" value = {{contact}}></input><br>
                           <input type="submit" id="login-form-submit" name="action" value="Edit"></input>

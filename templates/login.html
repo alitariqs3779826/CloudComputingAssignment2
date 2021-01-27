@@ -3,6 +3,11 @@
 <head>
 <link rel= "stylesheet" type= "text/css" href= "{{ url_for('static',filename='css/sty.css') }}">
 </head>
+<style>
+.message{
+  color:red
+}
+</style>
 <html>
   <!-- If you ever use this tell me and show me ! @kryze :) -->
   <body>
@@ -11,6 +16,7 @@
     <div class="splitdiv" id="leftdiv">
       <div id="leftdivcard">
         <h1 style="padding-top:20px;text-align:center">Sign In</h1>
+        <p class="message">{{ error }}</p>
         <form id="login-form" action="/auth/login" method="post">
 
             <div class="inset">

@@ -118,14 +118,17 @@ def login():
             if e.response['Error']['Code'] == 'UserNotFoundException':
                 
                 print("Can't Find user by Email")
-                return redirect(url_for('cognitoRoute.login_page'))
+                return render_template("login.html", error = "Can't find user by email")
             if e.response['Error']['Code'] == 'ParamValidationError':
                 
                 print("Param Validate Error")
-                return redirect(url_for('cognitoRoute.login_page'))
+                return render_template("login.html", error = "Param Validate Error")
+
             if e.response['Error']['Code'] == 'NotAuthorizedException':
                 print("Not Valid")
-                return redirect(url_for('cognitoRoute.login_page'))
+                # return redirect(url_for('cognitoRoute.login_page'))
+                return render_template("login.html", error = "Wrong Email or Password")
+
 
         r = requests.get("https://8c7ymla190.execute-api.us-west-2.amazonaws.com/dev/test_auth", 
         headers={"Authorization": response['AuthenticationResult']['IdToken']})
