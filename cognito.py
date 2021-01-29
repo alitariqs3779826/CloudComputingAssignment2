@@ -28,11 +28,11 @@ def contact_page_user():
 
 @cognitoRoute.route('/Adminhome', methods=['GET'])
 def admin_home():
-    return render_template('Adminhome.html')
+    return render_template('Adminhome.html',value = session['idToken'])
 
 @cognitoRoute.route('/Userhome', methods=['GET'])
 def user_home():
-    return render_template('home.html')
+    return render_template('home.html',value = session['idToken'])
 
 @cognitoRoute.route('/auth/signup', methods=['GET'])
 def create_account():
