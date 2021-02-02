@@ -9,8 +9,7 @@ import os
 import botocore
 
 client = boto3.client('s3', region_name='us-west-2')
-s3_client = boto3.client('s3', aws_access_key_id="AKIAZBIFBU4JBIPGZ5EP",
-    aws_secret_access_key="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",region_name='us-west-2')
+s3_client = boto3.client('s3', region_name='us-west-2')
 cognito_client = boto3.client('cognito-idp', region_name='us-west-2')
 
 APP_CLIENT_ID = "281hf825n7bh0t0s55giarg103"
